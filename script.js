@@ -66,7 +66,7 @@ function createGameCard(data) {
 
 function animateCount(element, target) {
     let current = 0;
-    const step = Math.max(1, Math.ceil(target / 100)); // Animation speed based on target size
+    const step = Math.max(1, Math.ceil(target / 100)); 
     const interval = setInterval(() => {
         current += step;
         if (current >= target) {
@@ -78,14 +78,11 @@ function animateCount(element, target) {
 }
 
 async function loadGames() {
-  // 1. Show skeleton loaders
   gamesContainer.innerHTML = universeIds.map(() => createSkeletonCard()).join('');
 
-  // 2. Fetch all game data in parallel
   const gameDataPromises = universeIds.map(fetchGameData);
   const allGameData = await Promise.all(gameDataPromises);
 
-  // 3. Process and display data
   let totalPlayers = 0;
   let totalVisits = 0;
   let finalHTML = '';
@@ -98,13 +95,10 @@ async function loadGames() {
   
   gamesContainer.innerHTML = finalHTML;
 
-  // 4. Update total stats with animation
   animateCount(totalPlayersEl, totalPlayers);
   animateCount(totalVisitsEl, totalVisits);
 }
 
-// Initial load
 loadGames();
 
-// Refresh every 60 seconds
 setInterval(loadGames, 60000);
