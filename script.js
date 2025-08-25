@@ -88,11 +88,19 @@ async function loadGames() {
   let finalHTML = '';
 
   for (const data of allGameData) {
+    if (
+      !data.id || 
+      data.name === "Unknown Game" || 
+      data.name === "Error Loading Game"
+    ) {
+      continue;
+    }
+
     totalPlayers += data.playing;
     totalVisits += data.visits;
     finalHTML += createGameCard(data);
   }
-  
+
   gamesContainer.innerHTML = finalHTML;
 
   animateCount(totalPlayersEl, totalPlayers);
