@@ -19,7 +19,7 @@ async function fetchGameData(universeId) {
     const thumbData = (await thumbRes.json()).data?.[0] || {};
 
     return {
-      id: gameData.rootPlaceId, // Use rootPlaceId for the play link
+      id: gameData.rootPlaceId,
       name: gameData.name || "Unknown Game",
       playing: gameData.playing || 0,
       visits: gameData.visits || 0,
