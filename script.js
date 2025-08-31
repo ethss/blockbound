@@ -1,4 +1,4 @@
-const universeIds = [3232589243, 7932044466, 6915315137, 6981450333, 8411918803, 6064308019];
+const universeIds = [3232589243, 7932044466, 6915315137, 6981450333, 8411918803, 6064308019, 5892853733];
 
 const gamesContainer = document.getElementById("games");
 const totalPlayersEl = document.getElementById("totalPlayers");
