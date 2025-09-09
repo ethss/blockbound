@@ -90,7 +90,7 @@ async function loadGames() {
   for (const data of allGameData) {
     if (
       !data.id || 
-      data.name === "Unknown Game" || 
+      data.name === "Unknown Game x" || 
       data.name === "Error Loading Game"
     ) {
       continue;
