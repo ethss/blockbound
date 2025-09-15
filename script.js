@@ -3,6 +3,9 @@ const universeIds = [3232589243, 8122362497, 6915315137, 6981450333, 6064308019,
 const gamesContainer = document.getElementById("games");
 const totalPlayersEl = document.getElementById("totalPlayers");
 const totalVisitsEl = document.getElementById("totalVisits");
+const searchInput = document.getElementById("gameSearch");
+const sortSelect = document.getElementById("sortSelect");
+let cachedGames = [];
 
 async function fetchGameData(universeId) {
   try {
@@ -53,10 +56,12 @@ function createGameCard(data) {
     const playLink = data.id ? `https://www.roblox.com/games/${data.id}` : '#';
     return `
       <div class="game-card">
-        <img src="${data.image}" alt="${data.name}">
+        <div class="media-wrap">
+          <img src="${data.image}" alt="${data.name}">
+          <span class="badge">👥 ${data.playing.toLocaleString()}</span>
+        </div>
         <div class="card-content">
           <h3>${data.name}</h3>
-          <p>👥 ${data.playing.toLocaleString()} playing</p>
           <p>👁️ ${data.visits.toLocaleString()} visits</p>
           <a href="${playLink}" target="_blank" rel="noopener noreferrer">Play Now</a>
         </div>
@@ -77,36 +82,55 @@ function animateCount(element, target) {
     }, 15);
 }
 
+function renderGames(list) {
+  if (!gamesContainer) return;
+  gamesContainer.innerHTML = list.map(createGameCard).join('');
+}
+
+function applyFiltersAndRender() {
+  let list = [...cachedGames];
+  if (searchInput && searchInput.value) {
+    const q = searchInput.value.toLowerCase();
+    list = list.filter(g => g.name.toLowerCase().includes(q));
+  }
+  if (sortSelect) {
+    const v = sortSelect.value;
+    if (v === 'playing') list.sort((a,b) => b.playing - a.playing);
+    else if (v === 'visits') list.sort((a,b) => b.visits - a.visits);
+    else if (v === 'name') list.sort((a,b) => a.name.localeCompare(b.name));
+  }
+  renderGames(list);
+}
+
 async function loadGames() {
-  gamesContainer.innerHTML = universeIds.map(() => createSkeletonCard()).join('');
+  if (gamesContainer) {
+    gamesContainer.innerHTML = universeIds.map(() => createSkeletonCard()).join('');
+  }
 
   const gameDataPromises = universeIds.map(fetchGameData);
   const allGameData = await Promise.all(gameDataPromises);
 
   let totalPlayers = 0;
   let totalVisits = 0;
-  let finalHTML = '';
+  const usable = [];
 
   for (const data of allGameData) {
-    if (
-      !data.id || 
-      data.name === "Unknown Game" || 
-      data.name === "Error Loading Game"
-    ) {
+    if (!data.id || data.name === "Unknown Game" || data.name === "Error Loading Game") {
       continue;
     }
-
     totalPlayers += data.playing;
     totalVisits += data.visits;
-    finalHTML += createGameCard(data);
+    usable.push(data);
   }
 
-  gamesContainer.innerHTML = finalHTML;
-
+  cachedGames = usable;
   animateCount(totalPlayersEl, totalPlayers);
   animateCount(totalVisitsEl, totalVisits);
+  applyFiltersAndRender();
 }
 
-loadGames();
+if (searchInput) searchInput.addEventListener('input', applyFiltersAndRender);
+if (sortSelect) sortSelect.addEventListener('change', applyFiltersAndRender);
 
+loadGames();
 setInterval(loadGames, 60000);
