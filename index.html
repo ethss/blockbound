@@ -22,7 +22,16 @@
           <img src="x.png" alt="Boss Studio  Logo">
           <h1>Block Bound </h1>
       </div>
-    <p>Creating amazing Roblox experiences.</p>
+      <nav class="site-nav">
+        <a href="#stats" class="nav-link">Stats</a>
+        <a href="#games" class="nav-link">Games</a>
+        <a href="#contact" class="nav-link">Partnerships</a>
+      </nav>
+      <p>Creating amazing Roblox experiences.</p>
+      <div class="hero-actions">
+        <a href="#games" class="btn btn-primary">Explore Games</a>
+        <a href="mailto:contact@blockbound.studio" class="btn btn-outline">Contact</a>
+      </div>
   </div>
 </header>
 
@@ -42,13 +51,21 @@
     </section>
 
     <section class="games">
-      <h2>Our Games</h2>
-      <div class="game-grid" id="games">
-        <!-- Skeleton loaders will be injected here by JS -->
+      <div class="section-header">
+        <h2>Our Games</h2>
+        <div class="games-toolbar">
+          <input id="gameSearch" class="input-filter" type="search" placeholder="Search games" aria-label="Search games">
+          <select id="sortSelect" class="select-sort" aria-label="Sort games">
+            <option value="playing" selected>Most Playing</option>
+            <option value="visits">Most Visits</option>
+            <option value="name">Name A–Z</option>
+          </select>
+        </div>
       </div>
+      <div class="game-grid" id="games"></div>
     </section>
 
-    <section class="partnerships">
+    <section class="partnerships" id="contact">
         <h2>Interested in a Partnership?</h2>
         <p>We're always looking for talented developers and exciting new games to bring into the Block Bound family. If you have a project you believe in, we want to hear about it.</p>
         <a href="mailto:contact@blockbound.studio" class="cta-button">Contact Us</a>
