@@ -1,3 +1,78 @@
+const universeIds = [
+  3232589243, 8122362497, 6915315137, 6981450333, 6064308019,
+  8193090582, 5892853733, 8171547030, 7997208413, 7814701351,
+  8149179907
+];
+
+const gamesContainer = document.getElementById("games");
+const totalPlayersEl = document.getElementById("totalPlayers");
+const totalVisitsEl = document.getElementById("totalVisits");
+const searchInput = document.getElementById("gameSearch");
+const sortSelect = document.getElementById("sortSelect");
+
+let cachedGames = [];
+
+function createSkeletonCard() {
+  return `
+    <div class="skeleton-card">
+      <div class="skeleton skeleton-img"></div>
+      <div class="skeleton skeleton-text"></div>
+      <div class="skeleton skeleton-text"></div>
+      <div class="skeleton skeleton-text"></div>
+    </div>
+  `;
+}
+
+function createGameCard(data) {
+  const playLink = data.id ? `https://www.roblox.com/games/${data.id}` : '#';
+  return `
+    <div class="game-card">
+      <div class="media-wrap">
+        <img src="${data.image}" alt="${data.name}">
+        <span class="badge">👥 ${data.playing.toLocaleString()}</span>
+      </div>
+      <div class="card-content">
+        <h3>${data.name}</h3>
+        <p>👁️ ${data.visits.toLocaleString()} visits</p>
+        <a href="${playLink}" target="_blank" rel="noopener noreferrer">Play Now</a>
+      </div>
+    </div>
+  `;
+}
+
+function animateCount(element, target) {
+  let current = 0;
+  const step = Math.max(1, Math.ceil(target / 100));
+  const interval = setInterval(() => {
+    current += step;
+    if (current >= target) {
+      current = target;
+      clearInterval(interval);
+    }
+    element.textContent = current.toLocaleString();
+  }, 15);
+}
+
+function renderGames(list) {
+  if (!gamesContainer) return;
+  gamesContainer.innerHTML = list.map(createGameCard).join('');
+}
+
+function applyFiltersAndRender() {
+  let list = [...cachedGames];
+  if (searchInput && searchInput.value) {
+    const q = searchInput.value.toLowerCase();
+    list = list.filter(g => g.name.toLowerCase().includes(q));
+  }
+  if (sortSelect) {
+    const v = sortSelect.value;
+    if (v === 'playing') list.sort((a, b) => b.playing - a.playing);
+    else if (v === 'visits') list.sort((a, b) => b.visits - a.visits);
+    else if (v === 'name') list.sort((a, b) => a.name.localeCompare(b.name));
+  }
+  renderGames(list);
+}
+
 async function loadGames() {
   if (gamesContainer) {
     gamesContainer.innerHTML = universeIds.map(() => createSkeletonCard()).join('');
@@ -18,10 +93,10 @@ async function loadGames() {
     const gamesData = (await gameRes.json()).data || [];
     const thumbsData = (await thumbRes.json()).data || [];
 
-    // Build a quick lookup for thumbnails by universeId
-    const thumbsMap = {};
+    // Map thumbnails by universeId
+    const thumbMap = {};
     for (const thumb of thumbsData) {
-      thumbsMap[thumb.targetId] = thumb.imageUrl;
+      thumbMap[thumb.targetId] = thumb.imageUrl || "https://via.placeholder.com/512/1a1a1a/ffffff?text=No+Image";
     }
 
     let totalPlayers = 0;
@@ -29,26 +104,36 @@ async function loadGames() {
     const usable = [];
 
     for (const game of gamesData) {
-      const imageUrl = thumbsMap[game.id] || "https://via.placeholder.com/512/1a1a1a/ffffff?text=No+Image";
+      const imageUrl = thumbMap[game.id] || "https://via.placeholder.com/512/1a1a1a/ffffff?text=No+Image";
 
-      usable.push({
+      const gameInfo = {
         id: game.rootPlaceId,
         name: game.name || "Unknown Game",
         playing: game.playing || 0,
         visits: game.visits || 0,
         image: imageUrl
-      });
+      };
 
-      totalPlayers += game.playing || 0;
-      totalVisits += game.visits || 0;
+      if (!gameInfo.id || gameInfo.name === "Unknown Game") continue;
+
+      totalPlayers += gameInfo.playing;
+      totalVisits += gameInfo.visits;
+      usable.push(gameInfo);
     }
 
     cachedGames = usable;
     animateCount(totalPlayersEl, totalPlayers);
     animateCount(totalVisitsEl, totalVisits);
     applyFiltersAndRender();
+
   } catch (err) {
     console.error("Error loading games:", err);
     gamesContainer.innerHTML = `<p class="error">Failed to load games. Please try again later.</p>`;
   }
 }
+
+if (searchInput) searchInput.addEventListener('input', applyFiltersAndRender);
+if (sortSelect) sortSelect.addEventListener('change', applyFiltersAndRender);
+
+loadGames();
+setInterval(loadGames, 60000); // Refresh every 60 seconds
