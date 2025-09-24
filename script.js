@@ -94,10 +94,14 @@ async function loadGames() {
 
   const universeIdStr = universeIds.join(',');
 
+  const corsProxy = "https://corsproxy.io/?";
+  const gameAPI = `${corsProxy}https://games.roblox.com/v1/games?universeIds=${universeIdStr}`;
+  const thumbAPI = `${corsProxy}https://thumbnails.roblox.com/v1/games/icons?universeIds=${universeIdStr}&returnPolicy=PlaceHolder&size=512x512&format=Png&isCircular=false`;
+
   try {
     const [gameRes, thumbRes] = await Promise.all([
-      fetch(`https://games.roproxy.com/v1/games?universeIds=${universeIdStr}`),
-      fetch(`https://thumbnails.roproxy.com/v1/games/icons?universeIds=${universeIdStr}&returnPolicy=PlaceHolder&size=512x512&format=Png&isCircular=false`)
+      fetch(gameAPI),
+      fetch(thumbAPI)
     ]);
 
     if (!gameRes.ok || !thumbRes.ok) {
@@ -107,7 +111,6 @@ async function loadGames() {
     const gamesData = (await gameRes.json()).data || [];
     const thumbsData = (await thumbRes.json()).data || [];
 
-    // Map thumbnails by universeId
     const thumbMap = {};
     for (const thumb of thumbsData) {
       thumbMap[thumb.targetId] = thumb.imageUrl || "https://via.placeholder.com/512/1a1a1a/ffffff?text=No+Image";
@@ -145,6 +148,7 @@ async function loadGames() {
     gamesContainer.innerHTML = `<p class="error">Failed to load games. Please try again later.</p>`;
   }
 }
+
 
 if (searchInput) searchInput.addEventListener('input', applyFiltersAndRender);
 if (sortSelect) sortSelect.addEventListener('change', applyFiltersAndRender);
